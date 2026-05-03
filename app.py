@@ -23,13 +23,18 @@ from werkzeug.utils import secure_filename
 # Konfiguracja
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'news-portal-secret-key-2026-change-in-production'
-app.config['DATABASE'] = os.path.join(app.instance_path, 'news.db')
+# Na Render używamy /tmp (plik jest tworzony przy każdym restarcie)
+app.config['DATABASE'] = os.environ.get('DATABASE_URL', '/tmp/news.db')
 app.config['UPLOAD_FOLDER'] = os.path.join(app.static_folder, 'uploads')
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB
 
 # Upewnij się że foldery istnieją
 os.makedirs(app.instance_path, exist_ok=True)
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
+# Inicjalizacja bazy danych (ważne dla gunicorn / Render)
+with app.app_context():
+    init_db()
 
 # Flask-Login
 login_manager = LoginManager()
@@ -637,9 +642,6 @@ def internal_error(e):
 # ==================== MAIN ====================
 
 if __name__ == '__main__':
-    with app.app_context():
-        init_db()
-    
     port = int(os.environ.get('PORT', 5000))
     
     print("\n" + "="*50)
