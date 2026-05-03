@@ -32,10 +32,6 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB
 os.makedirs(app.instance_path, exist_ok=True)
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-# Inicjalizacja bazy danych (ważne dla gunicorn / Render)
-with app.app_context():
-    init_db()
-
 # Flask-Login
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -142,6 +138,11 @@ def init_db():
         print("Baza danych zainicjalizowana pomyślnie!")
         print("Konto admina: admin / admin123")
         print("Konto redaktora: redaktor1 / author123")
+
+
+# Inicjalizacja bazy danych przy starcie (dla gunicorn / Render)
+with app.app_context():
+    init_db()
 
 
 def admin_required(f):
