@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="mb-4">
+    <h2><i class="bi bi-pencil-square me-2"></i>Edytuj artykuł</h2>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body p-4">
+        <form method="post">
+            <div class="mb-3">
+                <label class="form-label">Tytuł artykułu *</label>
+                <input type="text" name="title" class="form-control form-control-lg" value="{{ news.title }}" required>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-8 mb-3">
+                    <label class="form-label">Kategoria *</label>
+                    <select name="category_id" class="form-select" required>
+                        {% for cat in categories %}
+                        <option value="{{ cat.id }}" {% if cat.id == news.category_id %}selected{% endif %}>
+                            {{ cat.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">URL zdjęcia</label>
+                    <input type="url" name="image_url" class="form-control" value="{{ news.image_url or '' }}">
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label">Krótki opis</label>
+                <textarea name="excerpt" class="form-control" rows="2">{{ news.excerpt or '' }}</textarea>
+            </div>
+            
+            <div class="mb-4">
+                <label class="form-label">Treść artykułu *</label>
+                <textarea name="content" class="form-control" rows="14" required>{{ news.content }}</textarea>
+            </div>
+            
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <i class="bi bi-save me-2"></i>Zapisz zmiany
+                </button>
+                <a href="{{ url_for('news_detail', news_id=news.id) }}" class="btn btn-outline-secondary btn-lg">Anuluj</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

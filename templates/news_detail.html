@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="mb-3">
+    <a href="{{ url_for('index') }}" class="text-decoration-none">
+        <i class="bi bi-arrow-left me-1"></i> Powrót do listy newsów
+    </a>
+</div>
+
+<article class="bg-white rounded-3 shadow-sm p-4 mb-4">
+    <div class="d-flex justify-content-between align-items-start mb-3">
+        <span class="badge bg-primary fs-6">{{ news.category_name }}</span>
+        
+        <div class="d-flex gap-2">
+            {% if current_user.is_authenticated and (current_user.id == news.author_id or current_user.is_admin()) %}
+            <a href="{{ url_for('edit_news', news_id=news.id) }}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-pencil me-1"></i> Edytuj
+            </a>
+            <form action="{{ url_for('delete_news', news_id=news.id) }}" method="post" class="d-inline" 
+                  onsubmit="return confirm('Na pewno usunąć ten news?');">
+                <button type="submit" class="btn btn-outline-danger btn-sm">
+                    <i class="bi bi-trash me-1"></i> Usuń
+                </button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+    
+    <h1 class="display-6 fw-bold mb-3">{{ news.title }}</h1>
+    
+    <div class="news-meta mb-4 d-flex align-items-center gap-3">
+        <span><i class="bi bi-person-circle me-1"></i> {{ news.author_name }}</span>
+        <span><i class="bi bi-calendar3 me-1"></i> {{ news.created_at[:16] if news.created_at else '' }}</span>
+        {% if news.updated_at and news.updated_at != news.created_at %}
+        <span class="text-muted">(zaktualizowano {{ news.updated_at[:10] }})</span>
+        {% endif %}
+    </div>
+    
+    {% if news.image_url %}
+    <img src="{{ news.image_url }}" class="img-fluid rounded-3 mb-4 w-100" alt="{{ news.title }}" style="max-height: 450px; object-fit: cover;">
+    {% endif %}
+    
+    <div class="news-content fs-5" style="line-height: 1.7;">
+        {{ news.content | replace('\n', '<br>') | safe }}
+    </div>
+</article>
+
+<!-- Komentarze -->
+<div class="bg-white rounded-3 shadow-sm p-4">
+    <h4 class="mb-4 d-flex align-items-center">
+        <i class="bi bi-chat-dots me-2"></i>
+        Komentarze ({{ comments|length }})
+    </h4>
+    
+    {% if current_user.is_authenticated %}
+    <form action="{{ url_for('add_comment', news_id=news.id) }}" method="post" class="mb-4">
+        <div class="mb-3">
+            <textarea name="content" class="form-control" rows="3" placeholder="Napisz swój komentarz..." required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">
+            <i class="bi bi-send me-2"></i> Dodaj komentarz
+        </button>
+    </form>
+    {% else %}
+    <div class="alert alert-light border">
+        <i class="bi bi-info-circle me-2"></i>
+        <a href="{{ url_for('login') }}">Zaloguj się</a>, aby dodać komentarz.
+    </div>
+    {% endif %}
+    
+    {% if comments %}
+        {% for comment in comments %}
+        <div class="comment mb-3 p-3 bg-light rounded">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <strong>{{ comment.username }}</strong>
+                    <small class="text-muted ms-2">{{ comment.created_at[:16] }}</small>
+                </div>
+                
+                {% if current_user.is_authenticated and (current_user.id == comment.user_id or current_user.is_admin()) %}
+                <form action="{{ url_for('delete_comment', comment_id=comment.id) }}" method="post" class="d-inline">
+                    <button type="submit" class="btn btn-sm btn-link text-danger p-0" 
+                            onclick="return confirm('Usunąć komentarz?');">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+            <p class="mb-0 mt-2">{{ comment.content }}</p>
+        </div>
+        {% endfor %}
+    {% else %}
+        <p class="text-muted">Brak komentarzy. Bądź pierwszy!</p>
+    {% endif %}
+</div>
+{% endblock %}

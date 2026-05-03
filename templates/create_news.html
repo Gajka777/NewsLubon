@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="mb-4">
+    <h2><i class="bi bi-plus-circle me-2"></i>Dodaj nowy artykuł</h2>
+    <p class="text-muted">Uzupełnij poniższe pola, aby opublikować news.</p>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body p-4">
+        <form method="post">
+            <div class="mb-3">
+                <label class="form-label">Tytuł artykułu *</label>
+                <input type="text" name="title" class="form-control form-control-lg" required placeholder="Wpisz chwytliwy tytuł...">
+            </div>
+            
+            <div class="row">
+                <div class="col-md-8 mb-3">
+                    <label class="form-label">Kategoria *</label>
+                    <select name="category_id" class="form-select" required>
+                        <option value="">Wybierz kategorię...</option>
+                        {% for cat in categories %}
+                        <option value="{{ cat.id }}">{{ cat.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">URL zdjęcia (opcjonalnie)</label>
+                    <input type="url" name="image_url" class="form-control" placeholder="https://...">
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label">Krótki opis / excerpt</label>
+                <textarea name="excerpt" class="form-control" rows="2" placeholder="Krótki opis widoczny na liście..."></textarea>
+                <div class="form-text">Jeśli zostawisz puste, zostanie wygenerowany automatycznie.</div>
+            </div>
+            
+            <div class="mb-4">
+                <label class="form-label">Treść artykułu *</label>
+                <textarea name="content" class="form-control" rows="12" required placeholder="Tutaj wpisz pełną treść newsa..."></textarea>
+                <div class="form-text">Możesz używać zwykłego tekstu. Nowe linie będą zachowane.</div>
+            </div>
+            
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <i class="bi bi-check2-circle me-2"></i>Opublikuj news
+                </button>
+                <a href="{{ url_for('index') }}" class="btn btn-outline-secondary btn-lg">Anuluj</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

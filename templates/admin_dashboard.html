@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-speedometer2 me-2"></i>Panel Administratora</h2>
+    <span class="badge bg-danger fs-6">ADMIN</span>
+</div>
+
+<!-- Statystyki -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body text-center">
+                <i class="bi bi-people display-4"></i>
+                <h3 class="mt-2 mb-0">{{ stats.users }}</h3>
+                <p class="mb-0">Użytkowników</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body text-center">
+                <i class="bi bi-newspaper display-4"></i>
+                <h3 class="mt-2 mb-0">{{ stats.news }}</h3>
+                <p class="mb-0">Artykułów</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body text-center">
+                <i class="bi bi-chat-dots display-4"></i>
+                <h3 class="mt-2 mb-0">{{ stats.comments }}</h3>
+                <p class="mb-0">Komentarzy</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-dark">
+            <div class="card-body text-center">
+                <i class="bi bi-tags display-4"></i>
+                <h3 class="mt-2 mb-0">{{ stats.categories }}</h3>
+                <p class="mb-0">Kategorii</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Zarządzanie użytkownikami -->
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-people me-2"></i>Użytkownicy</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Nazwa</th>
+                                <th>Email</th>
+                                <th>Rola</th>
+                                <th>Akcja</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in users %}
+                            <tr>
+                                <td>{{ user.username }}</td>
+                                <td><small>{{ user.email }}</small></td>
+                                <td>
+                                    <span class="badge {% if user.role == 'admin' %}bg-danger{% elif user.role == 'author' %}bg-success{% else %}bg-secondary{% endif %}">
+                                        {{ user.role }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <form method="post" action="{{ url_for('change_user_role', user_id=user.id) }}" class="d-flex gap-1">
+                                        <select name="role" class="form-select form-select-sm" style="width: 110px;">
+                                            <option value="user" {% if user.role == 'user' %}selected{% endif %}>Użytkownik</option>
+                                            <option value="author" {% if user.role == 'author' %}selected{% endif %}>Redaktor</option>
+                                            <option value="admin" {% if user.role == 'admin' %}selected{% endif %}>Admin</option>
+                                        </select>
+                                        <button type="submit" class="btn btn-sm btn-outline-primary">OK</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Zarządzanie kategoriami -->
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-tags me-2"></i>Kategorie</h5>
+                <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
+                    <i class="bi bi-plus"></i> Dodaj
+                </button>
+            </div>
+            <div class="card-body p-0">
+                <ul class="list-group list-group-flush">
+                    {% for cat in categories %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>{{ cat.name }}</strong>
+                            {% if cat.description %}<br><small class="text-muted">{{ cat.description }}</small>{% endif %}
+                        </div>
+                        <form method="post" action="{{ url_for('delete_category', cat_id=cat.id) }}" 
+                              onsubmit="return confirm('Usunąć kategorię?');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Usuń</button>
+                        </form>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Ostatnie newsy -->
+<div class="card">
+    <div class="card-header bg-white">
+        <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Ostatnie artykuły</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Tytuł</th>
+                        <th>Autor</th>
+                        <th>Data</th>
+                        <th>Akcje</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for n in recent_news %}
+                    <tr>
+                        <td><a href="{{ url_for('news_detail', news_id=n.id) }}">{{ n.title[:60] }}{% if n.title|length > 60 %}...{% endif %}</a></td>
+                        <td>{{ n.author }}</td>
+                        <td><small>{{ n.created_at[:10] }}</small></td>
+                        <td>
+                            <a href="{{ url_for('edit_news', news_id=n.id) }}" class="btn btn-sm btn-outline-secondary">Edytuj</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal dodawania kategorii -->
+<div class="modal fade" id="addCategoryModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="{{ url_for('add_category') }}">
+                <div class="modal-header">
+                    <h5 class="modal-title">Dodaj nową kategorię</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Nazwa kategorii</label>
+                        <input type="text" name="name" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Opis (opcjonalnie)</label>
+                        <textarea name="description" class="form-control" rows="2"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Anuluj</button>
+                    <button type="submit" class="btn btn-primary">Dodaj kategorię</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
