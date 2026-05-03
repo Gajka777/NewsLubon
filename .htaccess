@@ -1,0 +1,34 @@
+# =============================================
+# NewsPortal - .htaccess dla dhosting.pl
+# =============================================
+
+# Włącz mod_rewrite (jeśli dostępny)
+RewriteEngine On
+
+# Opcja 1: Przekierowanie całego ruchu na wewnętrzny adres (działa tylko jeśli hosting pozwala)
+# UWAGA: Na większości shared hostingów to NIE działa (blokada Proxy)
+# RewriteRule ^(.*)$ http://127.0.0.1:5000/$1 [P,L]
+
+# Opcja 2: Przekierowanie na tymczasowy adres IP (dla testów)
+# RewriteRule ^(.*)$ http://109.95.158.122:5000/$1 [R=302,L]
+
+# Opcja 3 (zalecana na razie): Pokaż ładną stronę z linkiem do portalu
+# Jeśli chcesz, żeby po wejściu na lubon.net.pl od razu otwierał się portal,
+# to najlepsza opcja to użyć Proxy w panelu dhosting (patrz instrukcja poniżej)
+
+# =============================================
+# Jeśli chcesz, żeby domena pokazywała portal automatycznie:
+# 1. Wejdź do panelu dhosting → Strony WWW → Twoja domena
+# 2. Dodaj "Proxy" lub "Aplikacja" na port 5000
+# =============================================
+
+# Zabezpieczenie plików
+<FilesMatch "\.(env|ini|log|sh|py|pyc)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Kompresja (opcjonalnie)
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css application/javascript
+</IfModule>
